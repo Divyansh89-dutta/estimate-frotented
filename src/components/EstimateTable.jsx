@@ -16,34 +16,27 @@ const EstimateTable = ({ data, onEdit, onDeleted }) => {
     }
   };
 
- const handleDownloadPdf = async (id) => {
-  try {
-    const res = await axiosClient.get(`/estimate/${id}/pdf`, {
-      responseType: "blob",
-    });
+  const handleDownloadPdf = async (id) => {
+    try {
+      // either use url helper + fetch/axios, or just hit the route via axiosClient
+      const res = await axiosClient.get(`/estimate/${id}/pdf`, {
+        responseType: "blob",
+      });
 
-    const blob = new Blob([res.data], { type: "application/pdf" });
-    const url = window.URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `estimate-${id}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    window.URL.revokeObjectURL(url);
-
-    // ✅ SUCCESS TOAST (THIS WAS MISSING)
-    toast.success("PDF downloaded successfully 📄");
-
-  } catch (error) {
-    console.error("PDF download failed:", error);
-
-    // ❌ ERROR TOAST
-    toast.error("Failed to download PDF");
-  }
-};
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `estimate-${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("PDF download failed:", err);
+      toast.error("Failed to download PDF");
+    }
+  };
 
   if (!data?.length) {
     return (
@@ -99,7 +92,6 @@ const EstimateTable = ({ data, onEdit, onDeleted }) => {
               </td>
 
               <td className="px-4 py-3 space-x-1 whitespace-nowrap">
-                {/* NEW: View detail */}
                 <Link
                   to={`/estimates/${e._id}`}
                   className="px-3 py-1 text-xs rounded-full
